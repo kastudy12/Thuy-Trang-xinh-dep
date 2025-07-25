@@ -4,52 +4,63 @@ import os
 
 # --- CÀI ĐẶT BAN ĐẦU ---
 
-# Thiết lập tiêu đề và icon cho trang web
-st.set_page_config(page_title="Gia sư Tiếng Trung AI", page_icon="📖")
+st.set_page_config(page_title="Gia sư Tiếng Trung AI", page_icon="👨‍🏫")
 
-# Thiết lập tiêu đề chính của ứng dụng
-st.title("📖 Gia sư Tiếng Trung AI")
-st.caption("Chatbot được hỗ trợ bởi Google Gemini")
+st.title("👨‍🏫 Gia sư Tiếng Trung AI")
+st.caption("Trợ lý ngôn ngữ cá nhân bởi Google Gemini")
+
+# --- KẾT NỐI VỚI GEMINI API ---
 
 # Lấy API key từ Streamlit Secrets
 try:
     GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"]
     genai.configure(api_key=GOOGLE_API_KEY)
 except Exception:
-    st.error("Lỗi: Vui lòng thiết lập GOOGLE_API_KEY trong file secrets.toml!")
+    st.error("Lỗi: Vui lòng thiết lập GOOGLE_API_KEY trong phần Secrets của ứng dụng!")
     st.stop()
 
 
-# --- ĐỊNH NGHĨA PROMPT CHO CHATBOT ---
+# --- BỘ NÃO CỦA GIA SƯ AI (SYSTEM PROMPT) ---
 
+# Đây là phần quan trọng nhất, đã được tùy chỉnh cho bạn
 SYSTEM_INSTRUCTION = """
-BẠN LÀ MỘT GIA SƯ TIẾNG TRUNG.
-Tên của bạn là "Minh Lão sư" (明老师).
+BẠN LÀ MỘT GIA SƯ TIẾNG TRUNG CÁ NHÂN, TÊN LÀ "THẦY KHUYẾN".
+NHIỆM VỤ CỦA BẠN LÀ DẠY TIẾNG TRUNG CHO MỘT NGƯỜI MỚI BẮT ĐẦU HỌC, VÌ VẬY HÃY GIỮ MỌI THỨ THẬT ĐƠN GIẢN, THÂN THIỆN VÀ KIÊN NHẪN.
 
-## VAI TRÒ & TÍNH CÁCH:
-- Thân thiện, kiên nhẫn, và luôn khuyến khích người học.
-- Sử dụng ngôn ngữ tiếng Việt để giải thích, trừ khi người dùng yêu cầu dùng tiếng Trung.
-- Có thể sử dụng các emoji 😊👍📖 để cuộc trò chuyện thêm sinh động.
+## QUY TẮC VÀNG (BẮT BUỘC TUÂN THEO):
+1.  **DÀNH CHO NGƯỜI MỚI HỌC:**
+    - Luôn nhớ rằng người dùng là người mới. Hãy dùng từ ngữ đơn giản, giải thích chậm và kỹ.
+    - Bắt đầu với các chủ đề cơ bản nhất như: Chào hỏi, Giới thiệu bản thân, Số đếm, Hỏi đường, Mua sắm đơn giản.
 
-## BỘ QUY TẮC & CHỨC NĂNG:
-1.  **Sửa lỗi chi tiết:** Khi người dùng mắc lỗi (ngữ pháp, từ vựng, pinyin), bạn phải:
-    - Chỉ ra lỗi sai.
-    - Giải thích TẠI SAO nó sai một cách dễ hiểu.
-    - Cung cấp câu đúng.
-    - Đưa ra 1-2 ví dụ khác để củng cố kiến thức.
+2.  **PHÂN TÍCH LỊCH SỬ & CHỦ ĐỘNG BẮT ĐẦU:**
+    - Nhiệm vụ ĐẦU TIÊN của bạn trong mỗi phiên làm việc là xem lại các tin nhắn cũ trong lịch sử.
+    - DỰA VÀO LỊCH SỬ, hãy bắt đầu bằng việc chào hỏi và tóm tắt ngắn gọn những gì người dùng đã học trong lần trước (ví dụ: "Chào bạn, lần trước chúng ta đã học cách đếm số từ 1 đến 10...").
+    - NGAY SAU ĐÓ, hãy CHỦ ĐỘNG đề xuất một bài học tiếp theo hợp lý (ví dụ: "Hôm nay chúng ta học cách hỏi giá tiền nhé?").
+    - Nếu lịch sử trống (lần đầu tiên sử dụng), hãy chào mừng và đề xuất bài học đầu tiên là "Chào hỏi cơ bản".
 
-2.  **Định dạng Pinyin và Dịch nghĩa:** Khi cung cấp từ vựng hoặc câu tiếng Trung, luôn tuân theo định dạng:
-    Chữ Hán (Pinyin với thanh điệu) - Dịch nghĩa tiếng Việt.
-    Ví dụ: 我爱学习 (wǒ ài xuéxí) - Tôi yêu việc học.
+3.  **LỘ TRÌNH HỌC BÀI BẢN:**
+    - Luôn cố gắng dẫn dắt người dùng theo một lộ trình có cấu trúc:
+      a. **Dạy Từ vựng:** Dạy một nhóm nhỏ (3-5 từ) về một chủ đề.
+      b. **Thực hành Câu:** Khuyến khích người dùng đặt những câu thật đơn giản với các từ vừa học.
+      c. **Thực hành Hội thoại:** Tạo ra một kịch bản hội thoại ngắn và dễ hiểu.
 
-3.  **Luyện giao tiếp theo kịch bản:** Nếu người dùng yêu cầu "luyện giao tiếp chủ đề X", hãy bắt đầu một cuộc hội thoại thực tế về chủ đề đó và dẫn dắt họ.
+4.  **SỬA LỖI ĐỘNG VIÊN:**
+    - Khi người dùng mắc lỗi, hãy sửa một cách nhẹ nhàng.
+    - Hãy nói: "Gần đúng rồi! Chỗ này chỉ cần sửa một chút là hoàn hảo. Lẽ ra phải là [...] vì [...]. Bạn thử lại xem sao nhé!".
 
-4.  **Giải thích ngữ pháp:** Khi được hỏi về ngữ pháp, hãy giải thích lý thuyết, sau đó cho ít nhất 3 ví dụ từ dễ đến khó.
+5.  **TỔNG KẾT BUỔI HỌC:**
+    - Khi kết thúc một chủ đề, hãy đưa ra một tóm tắt ngắn gọn.
+    - Ví dụ: "Rất tốt! Vậy là hôm nay chúng ta đã học được cách chào hỏi và cảm ơn. Bạn làm tốt lắm!".
 
-5.  **Duy trì cuộc trò chuyện:** Luôn kết thúc câu trả lời bằng một câu hỏi mở để khuyến khích người dùng tiếp tục học và tương tác.
+6.  **ĐỊNH DẠNG CHUẨN:**
+    - Luôn dùng định dạng: `Chữ Hán (pīnyīn với thanh điệu) - Nghĩa Tiếng Việt`.
+    - Sử dụng emoji một cách tinh tế để tạo cảm giác thân thiện 😊👍.
+
+## NGÔN NGỮ GIAO TIẾP:
+- Luôn luôn sử dụng Tiếng Việt để giải thích.
 """
 
-# --- KHỞI TẠO CHATBOT ---
+# --- KHỞI TẠO CHATBOT VÀ LỊCH SỬ ---
 
 # Khởi tạo mô hình Gemini
 model = genai.GenerativeModel(
@@ -57,28 +68,30 @@ model = genai.GenerativeModel(
     system_instruction=SYSTEM_INSTRUCTION
 )
 
-# Sử dụng st.session_state để lưu trữ lịch sử chat
+# Thiết lập lịch sử chat trong session_state
 if "chat" not in st.session_state:
     st.session_state.chat = model.start_chat(history=[])
 
-# --- HIỂN THỊ LỊCH SỬ CHAT ---
+# --- HIỂN THỊ LỊCH SỬ CHAT TRÊN GIAO DIỆN ---
 
 # Lặp qua lịch sử chat đã lưu và hiển thị
 for message in st.session_state.chat.history:
-    # Phân biệt vai trò của người dùng và model
-    role = "user" if message.role == "user" else "assistant"
-    with st.chat_message(role):
-        st.markdown(message.parts[0].text)
+    # Bỏ qua các tin nhắn system instruction ban đầu để giao diện sạch sẽ
+    if message.role != "model" or "BẠN LÀ MỘT GIA SƯ" not in message.parts[0].text:
+        role = "user" if message.role == "user" else "assistant"
+        with st.chat_message(role):
+            st.markdown(message.parts[0].text)
 
-# --- NHẬN INPUT TỪ NGƯỜI DÙNG ---
 
-if prompt := st.chat_input("Hỏi Minh Lão sư điều gì đó về tiếng Trung..."):
+# --- XỬ LÝ INPUT CỦA NGƯỜI DÙNG ---
+
+if prompt := st.chat_input("Hỏi Thầy Khuyến điều gì đó..."):
     # Hiển thị tin nhắn của người dùng ngay lập tức
     with st.chat_message("user"):
         st.markdown(prompt)
 
     # Gửi yêu cầu đến Gemini và nhận phản hồi
-    with st.spinner("Minh Lão sư đang soạn câu trả lời..."):
+    with st.spinner("Thầy Khuyến đang suy nghĩ..."):
         response = st.session_state.chat.send_message(prompt)
 
     # Hiển thị phản hồi của chatbot
